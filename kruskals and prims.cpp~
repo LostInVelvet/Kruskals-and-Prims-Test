@@ -1,12 +1,13 @@
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
 
 struct Edge{
-  int src;
-  int dest;
-  int weight;
+    int src;
+    int dest;
+    int weight;
 };
 
 class Graph{
@@ -17,7 +18,12 @@ class Graph{
     Edge* edge;
 
   public:
-    
+    Graph* add_node(int node, int dest, int w){
+      edge[node].src = node;
+      edge[node].dest = dest;
+      edge[node].weight = w;
+    }
+
     Graph* create_graph(int v, int e){
       Graph* graph = new Graph;
        
@@ -26,6 +32,11 @@ class Graph{
       
       return graph;
     }
+
+  int get_vertices(){ return vertices; }
+  int get_edges() { return edges; }
+  Edge* get_edge(){ return edge; }
+  Edge get_single_edge(int num){ return edge[num]; }
 
 };
 
@@ -36,7 +47,19 @@ struct Subtree{
 
 
 int main(){
+  int numV = 5;
+  int numE = 7;
+  Graph* g = createGraph(numV, numE);
+  
+  g.add_node(1, 2, 5);
+  g.add_node(1, 3, 9);
+  g.add_node(1, 5, 7);
+  g.add_node(2, 3, 4);
+  g.add_node(3, 4, 2);
+  g.add_node(3, 5, 2);
+  g.add_node(4, 5, 1);
 
+  Kruskals(g);
 
   return 0;
 }
@@ -53,19 +76,75 @@ void Union(Subtree subtrees[], int v1, int v2){
   int vt1 = find(subtrees, v1);
   int vt2 = find(subtrees, v2);
 
+  
   // Find the tree with the lower amount of elements and combine it to the bigger one
-  if(subtree[vt1].numElements < subtree[vt2].numElements){
-    subtrees[vt1].head = vt2
-  }
   
-  else if(subtree[vt1].numElements > subtree[vt2].numElements){
-    subtrees[vt2].head = vt1
-  }
-  
-  else {
+  // If vt1 < vt2
+  // Add vt1 to vt2
+  if(subtrees[vt1].numElements < subtrees[vt2].numElements){
     subtrees[vt1].head = vt2;
-    subtrees[vt2].numElements++;
   }
   
+  // If vt1 > vt2
+  // Add vt2 to vt1
+  else if(subtrees[vt1].numElements > subtrees[vt2].numElements){
+    subtrees[vt2].head = vt1;
+  }
+  
+  // If vt1 = vt2
+  // Then set vt2's head to vt1
+  else {
+    subtrees[vt2].head = vt1;
+    subtrees[vt1].numElements++;
+  }
+  
+}
+
+
+
+int Compare(const void * a, const void * b){
+  Edge * a1 = (Edge*)a;
+  Edge * b1 = (Edge*)b;
+  
+  return a1->weight > b1->weight;
+}
+
+
+
+void Kruskals(Graph g){
+  int v = g.get_vertices();
+  Edge result[v];
+  int numEdges = 0;
+  int sortedEdges = 0;
+  
+  // Sort all the edges in order by weight using quicksort
+  qsort(g.get_edge(), g.get_edges(), sizeof(g.get_single_edge(0)), Compare);
+  
+  Subtree *subtrees = new Subtree;
+  
+  // Create v Subtrees
+  for(int i = 0; i < v; i++){
+    subtrees[i].head = i;
+    subtrees[i].numElements = 0;
+  }
+  
+  while(numEdges < v - 1){
+    Edge next = g.get_single_edge(sortedEdges);
+    
+    int src = find(subtrees, next.src);
+    int dest = find(subtrees, next.dest);
+
+    if(src != dest){
+      numEdges++;
+      result[numEdges] = next;
+      Union(subtrees, src, dest);
+    }
+  }
+  
+  
+  cout << endl << "Kruskals: " << endl;
+  for(int i = 0; i < numEdges; i++){
+    cout << endl << result[i].src << " -> " << result[i].dest << "   = " << result[i].weight;
+  }
 
 }
