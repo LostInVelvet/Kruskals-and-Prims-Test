@@ -2,11 +2,12 @@
 #include <cstdlib>		// qsort
 #include <cstring>		// NULL
 #include <climits>		// INT_MAX
+#include <vector>
 
 using namespace std;
 
 const int INFINITY = INT_MAX;	// Used for prims
-
+const int NINFINITY = INT_MIN;	
 
 
 // ****************************************************************
@@ -72,6 +73,8 @@ class Graph{
       
       newEdge->next = array[src].head;
       array[src].head = newEdge;
+      
+      newEdge = add_edge(node, dest, src, w);
       
       newEdge->next = array[dest].head;
       array[dest].head = newEdge;
@@ -144,7 +147,10 @@ int find(Subtree subtrees[], int findMe);
 void Union(Subtree subtrees[], int v1, int v2);
 int Compare(const void * a, const void * b);
 
-int GetMin(List* Q, PrimHelper t[5], int value);
+int GetMin(Graph g, PrimHelper t[5], int q[5], vector<pair<int, int> > &MST);
+void UpdateKeys(Graph g, int q[5], PrimHelper t[5], int value);
+bool IsAvailable(int q[5], int value);
+void Reorder(vector<pair<int, int> > &MST);
 
 
 
@@ -169,10 +175,10 @@ int main(){
    (1)--9--(3)
     |      /|
     |    /  |
-    7   2   2
+   -7   2  -2
     |  /    |
     |/      |
-   (0)--1--(4)
+   (0)--0--(4)
         
 
 */
@@ -180,7 +186,7 @@ int main(){
 
   g->add_node(0, 0, 1, -7);
   g->add_node(1, 0, 3, 2);
-  g->add_node(2, 0, 4, 1);
+  g->add_node(2, 0, 4, 0);
   g->add_node(3, 1, 2, 5);
   g->add_node(4, 1, 3, 9);
   g->add_node(5, 2, 3, 4);
@@ -202,6 +208,9 @@ int main(){
 
 
 
+// Implements Kruskal's Algorithm
+// Pre: Graph is made and filled
+// Post: Kruskal's Algorithm is implemented and the result is output
 void Kruskals(Graph* graph){
   Graph* g = graph;
   int v = g->get_vertices();
@@ -260,19 +269,6 @@ void Kruskals(Graph* graph){
 
 
 // ****************************************************************
-// ****************************************************************
-// ****************************************************************
-//
-//                          WORKING HERE
-//
-// ****************************************************************
-// ****************************************************************
-// ****************************************************************
-
-
-
-
-// ****************************************************************
 //
 //			  Prim's Algorithm
 //
@@ -280,54 +276,78 @@ void Kruskals(Graph* graph){
 
 
 
+// Prim's Algorithm
+// Pre: Graph is made and filled
+// Post: Prim's algorithm is implemented and the result is output
 void Prims(Graph* graph){
   Graph g = *graph;
   int V = g.vertices;
-  List* Q;
-  PrimHelper t[5];
+  vector<pair<int, int> > MST;     // Holds the Visited Nodes
+  int q[V];
+  
+  PrimHelper t[V];
   int lastNode = 0;		// Holds the integer value of the last node visited
   
   // Set up Q
-  Q = (List*)malloc(graph->vertices * sizeof(List));  
-  Q = g.array;
+  for(int i = 0; i < V; i++){
+    q[i] = i;
+  }
   
   // Set all keys to infinity and all parents to NULL
-  for(int i = 0; i<5; i++){
+  for(int i = 0; i<V; i++){
     t[i].key = INFINITY;
-    t[i].parent = NULL;
+    t[i].parent = NINFINITY;
   }
   
   // Pick starting node 0 and set it's key to 0
   t[0].key = 0;
 
-  // Update keys nearby
-  
+  for(int i = 0; i < V; i++){  
+    // Get Minimum
+    lastNode = GetMin(g, t, q, MST);
 
-  // Get Minimum
-  lastNode = GetMin(Q, t, lastNode);
+    // Update keys nearby
+    UpdateKeys(g, q, t, lastNode);
+    
+    q[lastNode] = NINFINITY;
+  }
 
 
   cout << "Prims:" << endl << endl;
-cout << endl << lastNode;
 
-/*
-  Node* temp;
-  for(int i = 0; i < 5; i++){
-    temp = graph->array[i].head;
-    
-    while(temp->next != NULL){
-      temp = temp->next;
-      cout << temp->src << " -(" <<  temp->weight << ")-> " <<  temp->dest << endl;
-    }
-  }
-  cout << endl << "____________" << endl << endl;;
-  cout << graph->array[0].head->src << " -" <<  graph->array[0].head->weight << "-> " <<  graph->array[0].head->dest << endl;
-  cout << graph->array[1].head->src << " -" <<  graph->array[1].head->weight << "-> " <<  graph->array[1].head->dest << endl;
-  cout << graph->array[2].head->src << " -" <<  graph->array[2].head->weight << "-> " <<  graph->array[2].head->dest << endl;
-  cout << graph->array[3].head->src << " -" <<  graph->array[3].head->weight << "-> " <<  graph->array[3].head->dest << endl;
-  cout << graph->array[4].head->src << " -" <<  graph->array[4].head->weight << "-> " <<  graph->array[4].head->dest << endl;
-  */
+  // Re-order the vector
+  Reorder(MST);
   
+  // Start at 1 to skip the 0
+  for(int i = 1; i < MST.size(); i++){
+    cout << MST[i].first << " -> " << MST[i].second << endl;
+  }
+  cout << endl;
+
+
+  
+//  cout << "Vector: " << MST[0].first << " -> " << MST[0].second << endl;
+
+
+      // Debug: Print Out the Keys
+/*      for(int i = 0; i < V; i++){
+        cout << "Key " << i << ": " << t[i].key << endl;
+      }
+*/
+
+  // Debug: Output the Adjacency list
+/*  Node* temp;
+  for(int i = 0; i < V; i++){
+    temp = g.array[i].head;
+    cout << i << ": " ;
+    while(temp){
+      cout << " -> (" << temp->src << ", " << temp->dest << ")";
+      temp = temp->next;
+    }
+    cout << endl;
+  }
+*/
+
 }
 
 
@@ -341,6 +361,8 @@ cout << endl << lastNode;
 
 
 // Finds the head of the subtree with the specified element
+// Pre: Subtrees are made and the desired element is specified
+// Post: Finds the head of the desired subtree
 int find(Subtree subtrees[], int findMe) {
 
   if(subtrees[findMe].head != findMe)
@@ -356,6 +378,8 @@ int find(Subtree subtrees[], int findMe) {
 
 
 // Combines two subtrees
+// Pre: Subtrees are made and elements are defined
+// Post: Combines the subtrees into one subtree
 void Union(Subtree subtrees[], int v1, int v2){
   int vt1 = find(subtrees, v1);
   int vt2 = find(subtrees, v2);
@@ -407,38 +431,95 @@ int Compare(const void * a, const void * b){
 // ****************************************************************
 
 
-
-int GetMin(List* Q, PrimHelper t[5], int value){
+// Finds the minimum key value in t and returns the node's number
+// Pre: Graph is made and keys are updated
+// Post: Minimum key is found in t. The parent's number is returned
+int GetMin(Graph g, PrimHelper t[5], int q[5], vector<pair<int, int> > &MST){
   int min = INFINITY;
+  int parent;
   int minVal = INFINITY;
-  Node* temp = new Node;
-  
-  temp = Q[value].head;
   
   // Get Minimum
-  
-// ****************************************************
-// ***************** MAY NOT GET THE LAST ELEMENT 
-// ****************************************************
-  while(temp->next){
-    if(temp->weight < minVal) {
-      minVal = temp->weight;
-      
-      if(temp->src != value){
-        min = temp->src;
-      }
-      else {
-        min = temp->dest;
-      }
+  for(int i = 0; i < g.vertices; i++){
+    if(t[i].key < minVal && IsAvailable(q, i) == true){
+      min = i;
+      minVal = t[i].key;
+      parent = t[i].parent;
     }
   }
+//  cout << "Vector added: " << parent << ", " << min << endl;
+  MST.push_back(make_pair(parent, min) );
   
   return min;
 }
 
 
 
-void UpdateKeys(List* Q, PrimHelper t[5], int value){
-  
+// ****************************************************************
 
+
+
+// t is updated with the weights adjacent to node 'value'
+// Pre: Graph is made and the list of available elements (q) is updated
+// Post: Updates t to hold the weights of all adjacent elements to 'value'
+void UpdateKeys(Graph g, int q[5], PrimHelper t[5], int value){
+  Node* temp = new Node;
+  int nodeNeeded;
+    
+  temp = g.array[value].head;
+
+  while(temp != NULL){
+    // Find the source/destination
+    nodeNeeded = temp->dest;
+
+    // Check if it's less than key[ ]
+    if(temp->weight < t[nodeNeeded].key && IsAvailable(q, temp->src)){
+      // If so, update the key
+      t[nodeNeeded].key = temp->weight;
+      t[nodeNeeded].parent = value;
+    }
+    temp = temp->next;
+  }      
+}
+
+
+
+// ****************************************************************
+
+
+
+// Checks if an element is available (to avoid a cycle)
+// Pre: q is filled with elements available or set to NEGINFINITY if
+//	not available
+// Post: Returns whether the specified value is available
+bool IsAvailable(int q[5], int value){
+//  cout << value <<" is available: ";
+  if(q[value] != NINFINITY){
+//    cout << "true" << endl;
+    return true;
+  }
+  else {
+//    cout << "false" << endl;
+    return false;
+  }
+
+}
+
+
+
+// ****************************************************************
+
+
+
+// Re-orders the vector to be the correct way
+// Pre: MST is filled
+// Post: Correctly ordered MST is filled
+void Reorder(vector<pair<int, int> > &MST){
+  vector<pair<int, int> > T;
+
+  for(int i = 0; i < MST.size(); i++){
+    T.push_back(MST[i]);
+  }
+
+  MST = T;
 }
