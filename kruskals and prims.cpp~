@@ -224,12 +224,12 @@ void Kruskals(Graph* graph){
 
 
   // Test the sorted graph
-  cout << endl << "Testing Graph: ";
+/*  cout << endl << "Testing Graph: ";
 
   for(int i = 0; i < 7; i++)
     cout << endl << g->edge[i].src << " " << g->edge[i].dest << " " <<  g->edge[i].weight;
   cout << endl << endl;
-
+*/
   
   // Allocate Memory
   Subtree *subtrees = (Subtree*)malloc( v * sizeof(Subtree) );
@@ -256,14 +256,14 @@ void Kruskals(Graph* graph){
     sortedEdges++;
   }
   
-  
+  /*
   cout << endl << "Kruskals: " << endl;
   for(int i = 0; i < numEdges; i++){
 
     cout << endl << result[i].src << " -> " << result[i].dest;
   }
   cout << endl << endl;
-
+*/
 }
 
 
@@ -319,11 +319,11 @@ void Prims(Graph* graph){
   Reorder(MST);
   
   // Start at 1 to skip the 0
-  for(int i = 1; i < MST.size(); i++){
+/*  for(int i = 1; i < MST.size(); i++){
     cout << MST[i].first << " -> " << MST[i].second << endl;
   }
   cout << endl;
-
+*/
 
   
 //  cout << "Vector: " << MST[0].first << " -> " << MST[0].second << endl;
