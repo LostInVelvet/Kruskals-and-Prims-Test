@@ -1,131 +1,71 @@
 #include <iostream>
-#include <vector>
-
 
 using namespace std;
 
-class Vertex;
-class Graph;
 
-// Edge is an "invisible line" between two nodes that holds which two
-// nodes it is associating together and their specified weight
-class Edge {
-  private:
-    Vertex* v1;
-    Vertex* v2;
-    int weight;
-  
-  public:
-  // Adds edge information between two specified vertexes
-  Edge(Vertex *vt1, Vertex *vt2, int w){
-      v1 = vt1;
-      v2 = vt2;
-      weight = w;
-  }
-  
-
-  // Return private variable values      
-  Vertex* get_v1() { return v1; }
-  Vertex* get_v2() { return v2; }
-  int     get_weight() { return weight; }
-
+struct Edge{
+  int src;
+  int dest;
+  int weight;
 };
 
-
-
-// Vertex are the individiual nodes with their associated number and their edges
-class Vertex {
+class Graph{
   private:
-    int myNum;
-    vector<Edge> edges;
-        
+    int vertices;
+    int edges;
+  
+    Edge* edge;
 
   public:
-    Vertex(int num){
-      myNum = num;
-    }
     
-    int get_num(){ return myNum; }
-    
-    // Inserts an edge between the current vertex and a specificed vertex
-    int add_edge(Vertex *v2, int w) {
-      Edge newEdge(this, v2, w);
-      edges.push_back(newEdge);
-    }
-    
-    
-    // Prints out the edges and weights associated with the current vertex
-    void print_edges() {
-      cout << endl << myNum << ": ";
+    Graph* create_graph(int v, int e){
+      Graph* graph = new Graph;
+       
+      graph->vertices = v;
+      graph->edges = e;
       
-      for(int i = 0; i< edges.size(); i++){
-        Edge temp = edges[i];
-        
-        cout << endl << "\t" << temp.get_v2()->get_num() << " - "
-             << temp.get_weight() <<  endl;
-      }
-      cout << endl << endl;
-    }
-    
-};
-
-
-
-// Graph is the group of vertices in the entire graph
-class Graph {
-  private:
-    vector<Vertex*> vertices;
-    
-    
-  // Adds a vertex (node) to the graph
-  public:
-    void add_vertex(Vertex* v){
-      vertices.push_back(v);
-    }
-    
-    
-    // Prints out all vertices and their edges in the specified graph
-    void print_graph() {
-      for(int i = 0; i < vertices.size(); i++){
-        vertices[i]->print_edges();
-      }
+      return graph;
     }
 
 };
 
+struct Subtree{
+  int head;
+  int numElements;
+};
 
 
 int main(){
-  Graph g;
-
-  Vertex v1 = Vertex(1);
-  Vertex v2 = Vertex(2);
-  Vertex v3 = Vertex(3);
-  Vertex v4 = Vertex(4);
-  Vertex v5 = Vertex(5);
 
 
-  Vertex *vt1 = &v1;
-  Vertex *vt2 = &v2;
-  Vertex *vt3 = &v3;
-  Vertex *vt4 = &v4;
-  Vertex *vt5 = &v5;
-
-  v1.add_edge(vt2, 5);
-  v2.add_edge(vt3, 4);
-  v3.add_edge(vt4, 2);
-  v3.add_edge(vt1, 9);
-  v4.add_edge(vt5, 1);
-  v5.add_edge(vt3, 2);
-  v5.add_edge(vt1, 7);
-
-  g.add_vertex(vt1);
-  g.add_vertex(vt2);
-  g.add_vertex(vt3);
-  g.add_vertex(vt4);
-  g.add_vertex(vt5);
-
-  g.print_graph();
-  
   return 0;
+}
+
+
+int find(Subtree subtrees[], int findMe) {
+  if(subtrees[findMe].head != findMe)
+    subtrees[findMe].head = find(subtrees, subtrees[findMe].head);
+    
+  return subtrees[findMe].head;
+}
+
+void Union(Subtree subtrees[], int v1, int v2){
+  int vt1 = find(subtrees, v1);
+  int vt2 = find(subtrees, v2);
+
+  // Find the tree with the lower amount of elements and combine it to the bigger one
+  if(subtree[vt1].numElements < subtree[vt2].numElements){
+    subtrees[vt1].head = vt2
+  }
+  
+  else if(subtree[vt1].numElements > subtree[vt2].numElements){
+    subtrees[vt2].head = vt1
+  }
+  
+  else {
+    subtrees[vt1].head = vt2;
+    subtrees[vt2].numElements++;
+  }
+  
+
 }
