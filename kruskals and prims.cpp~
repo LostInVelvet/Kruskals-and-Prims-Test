@@ -6,11 +6,6 @@
 using namespace std;
 
 
-struct AdjList{
-  int myNum;
-  AdjList *next;
-};
-
 struct Edge{
     int src;
     int dest;
@@ -21,8 +16,8 @@ struct Edge{
 
 class Graph{
   public:
-    int vertices;	// Number of vertices in the graph
-    int edges;		// Number of edges in the graph
+    int vertices;
+    int edges;
   
     Edge* edge;
 
@@ -131,11 +126,11 @@ int main(){
 
   g->add_node(0, 1, 2, 5);
   g->add_node(1, 1, 3, 9);
-  g->add_node(2, 1, 5, 7);
+  g->add_node(2, 1, 0, 7);
   g->add_node(3, 2, 3, 4);
   g->add_node(4, 3, 4, 2);
-  g->add_node(5, 3, 5, 2);
-  g->add_node(6, 4, 5, 1);
+  g->add_node(5, 3, 0, 2);
+  g->add_node(6, 4, 0, 1);
   
 
   Kruskals(g);
@@ -145,19 +140,150 @@ int main(){
 }
 
 
-void Kruskals(Graph* graph){
-  int src;
-  int dest;
-  int weight;
+// Finds the head of the subtree with the specified element
+int find(Subtree subtrees[], int findMe) {
+  cout << endl << "\tLooking for: " << findMe << " in " << subtrees[findMe].head;
   
+  if(subtrees[findMe]
+  .head != findMe)
+    subtrees[findMe].head = find(subtrees, subtrees[findMe].head);
+    
+    cout << endl << "\tFound: " << subtrees[findMe].head;
+  return subtrees[findMe].head;
+}
+
+void Union(Subtree subtrees[], int v1, int v2){
+  int vt1 = find(subtrees, v1);
+  int vt2 = find(subtrees, v2);
+
+  
+  // Find the tree with the lower amount of elements and combine it to the bigger one
+  
+  // If vt1 < vt2
+  // Add vt1 to vt2
+  if(subtrees[vt1].numElements < subtrees[vt2].numElements){
+    subtrees[vt1].head = vt2;
+  }
+  
+  // If vt1 > vt2
+  // Add vt2 to vt1
+  else if(subtrees[vt1].numElements > subtrees[vt2].numElements){
+    subtrees[vt2].head = vt1;
+  }
+  
+  // If vt1 = vt2
+  // Then set vt2's head to vt1
+  else {
+    subtrees[vt2].head = vt1;
+    subtrees[vt1].numElements++;
+  }
+  
+}
+
+
+
+int Compare(const void * a, const void * b){
+  Edge * a1 = (Edge*)a;
+  Edge * b1 = (Edge*)b;
+  
+  return a1->weight > b1->weight;
+}
+
+
+
+void Kruskals(Graph* graph){
+  Graph* g = graph;
+  int v = g->get_vertices();
+  Edge result[v];		// Stores the result of the MST
+  int numEdges = 0;
+  int sortedEdges = 0;
+
+
+  // Sort all the edges in order by weight using quicksort
+  qsort(g->get_edge(), g->get_edges(), sizeof(g->get_single_edge(0)), Compare);
+
+
+  // Test the graph
+  cout << endl << "Testing Graph: ";
+
+  for(int i = 0; i < 7; i++)
+    cout << endl << g->edge[i].src << " " << g->edge[i].dest << " " <<  g->edge[i].weight;
+  cout << endl << endl;
+
+  
+  // Allocate Memory
+  Subtree *subtrees = (Subtree*)malloc( v * sizeof(Subtree) );
+
+  
+  // Create v Subtrees
+  for(int i = 0; i < v; i++){
+    subtrees[i].head = i;
+    subtrees[i].numElements = 0;
+  }
   
 
+  
+// It's eating a line here
+// for(numEdges = 0; numEdges < v; numEdges++){
+  while(numEdges < v-1){
+    cout << endl << "\t\t\tsortedEdges = " << sortedEdges;
+    Edge next = g->get_single_edge(sortedEdges);
+    
+      cout << endl << "\tNext: " << next.src << "->" << next.dest;
+    
+      cout << endl << "Finding source: ";
+
+    int src = find(subtrees, next.src);
+      cout << endl << "Source head: " << subtrees[sortedEdges].head << " \n-  Num Elements:" << subtrees[sortedEdges+1].numElements << endl;
+
+    cout << endl << endl << "***Finding Destination: ";
+    int dest = find(subtrees, next.dest);
+
+    cout << endl << "Done finding Dest: " << src << " " << dest;
+
+    if(src != dest){
+      result[numEdges++] = next;
+      Union(subtrees, src, dest);
+    }
+    sortedEdges++;
+  }
+  
+  
+  cout << endl << "Kruskals: " << endl;
+  for(int i = 0; i < numEdges; i++){
+    cout << endl << result[i].src << " -> " << result[i].dest << "   = " << result[i].weight;
+  }
 
 }
 
+
+
 void Prims(Graph* graph){
-  AdjList visited;
-  AdjList 
+  Graph g = *graph;
+  int * visited;
+  PrimHelper t[5];
+  int arrSize = 5;
+  int * Q;
   
+  // Put all of the vertices in a list
+  for(int i = 0; i <5; i++) {
+    Q[i] = i++;
+  }
   
+  // Set all key's to infinity and all parents to NULL
+  for(int i = 0; i < 5; i++){
+    t[i].key = INT_MAX;
+    t[i].parent = NULL;
+  }
+
+  // Pick a root and set it's key to 0
+  t[0].key = 0;
+
+  while(arrSize > 0){
+    // Find the lowest weight
+    
+    // Subtract that element from Q
+  
+  }
+
 }
