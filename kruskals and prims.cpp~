@@ -17,10 +17,26 @@ const int INFINITY = INT_MAX;	// Used for prims
 
 
 
-struct Edge{
+struct Node{
     int src;
     int dest;
     int weight;
+    Node* next;
+};
+
+
+
+// ****************************************************************
+//
+//                            List
+//
+// ****************************************************************
+
+
+
+struct List{
+  int size;
+  Node* head;  
 };
 
 
@@ -38,18 +54,36 @@ class Graph{
     int vertices;
     int edges;
   
-    Edge* edge;
+    Node* edge;
+    List* array;
 
-    void add_node(const int node, int src, int dest, int w){
-      edge[node].src = src;
-      edge[node].dest = dest;
-      edge[node].weight = w;
+    Node* add_edge(const int node, int src, int dest, int w){
+      Node* newEdge = new Node;
+      newEdge->src = src;
+      newEdge->dest = dest;
+      newEdge->weight = w;
+      newEdge->next = NULL;
+
+      return newEdge;
     }
 
-  int get_vertices(){ return vertices; }
-  int get_edges() { return edges; }
-  Edge* get_edge(){ return edge; }
-  Edge get_single_edge(int num){ return edge[num]; }
+    void add_node(const int node, int src, int dest, int w){
+      Node* newEdge = add_edge(node, src, dest, w);
+      
+      newEdge->next = array[src].head;
+      array[src].head = newEdge;
+      
+      newEdge->next = array[dest].head;
+      array[dest].head = newEdge;
+      
+      edge[node] = *newEdge;
+    }
+    
+
+    int get_vertices(){ return vertices; }
+    int get_edges() { return edges; }
+    Node* get_edge(){ return edge; }
+    Node get_single_edge(int num){ return edge[num]; }
 };
 
 
@@ -64,8 +98,13 @@ struct Graph* create_graph(int v, int e){
   graph->vertices = v;
   graph->edges = e;
   
-  graph->edge = (Edge*)malloc(graph->edges * sizeof(Edge));
-
+  graph->edge = (Node*)malloc(graph->edges * sizeof(Node));
+  graph->array = (List*)malloc(graph->edges * sizeof(List));
+  
+  for(int i = 0; i < graph->vertices; i++){
+    graph->array[i].head = NULL;
+  }
+  
   return graph;
 }
 
@@ -86,7 +125,7 @@ struct Subtree{
 
 
 struct PrimHelper{
-  int weight;
+  int key;
   int parent;
 };
 
@@ -104,6 +143,8 @@ void Prims(Graph* graph);
 int find(Subtree subtrees[], int findMe);
 void Union(Subtree subtrees[], int v1, int v2);
 int Compare(const void * a, const void * b);
+
+int GetMin(List* Q, PrimHelper t[5], int value);
 
 
 
@@ -131,21 +172,21 @@ int main(){
     7   2   2
     |  /    |
     |/      |
-   (4)--1--(5)
+   (0)--1--(4)
         
 
 */
 
-  g->add_node(0, 1, 2, 5);
-  g->add_node(1, 1, 3, 9);
-  g->add_node(2, 1, 0, -7);
-  g->add_node(3, 2, 3, 4);
-  g->add_node(4, 3, 4, -2);
-  g->add_node(5, 3, 0, 2);
-  g->add_node(6, 4, 0, 1);
-  
 
-//  Kruskals(g);
+  g->add_node(0, 0, 1, -7);
+  g->add_node(1, 0, 3, 2);
+  g->add_node(2, 0, 4, 1);
+  g->add_node(3, 1, 2, 5);
+  g->add_node(4, 1, 3, 9);
+  g->add_node(5, 2, 3, 4);
+  g->add_node(6, 3, 4, -2);
+  
+  Kruskals(g);
   Prims(g);
 
   return 0;
@@ -164,7 +205,7 @@ int main(){
 void Kruskals(Graph* graph){
   Graph* g = graph;
   int v = g->get_vertices();
-  Edge result[v];		// Stores the result of the MST
+  Node result[v];		// Stores the result of the MST
   int numEdges = 0;
   int sortedEdges = 0;
 
@@ -193,10 +234,8 @@ void Kruskals(Graph* graph){
   
 
   
-// It's eating a line here
-// for(numEdges = 0; numEdges < v; numEdges++){
   while(numEdges < v-1){
-    Edge next = g->get_single_edge(sortedEdges);
+    Node next = g->get_single_edge(sortedEdges);
     
     int src = find(subtrees, next.src);
     int dest = find(subtrees, next.dest);
@@ -212,11 +251,14 @@ void Kruskals(Graph* graph){
   cout << endl << "Kruskals: " << endl;
   for(int i = 0; i < numEdges; i++){
 
-    cout << endl << result[i].src << " -> " << result[i].dest /*<< "   = " << result[i].weight*/;
+    cout << endl << result[i].src << " -> " << result[i].dest;
   }
   cout << endl << endl;
 
 }
+
+
+
 // ****************************************************************
 // ****************************************************************
 // ****************************************************************
@@ -240,38 +282,52 @@ void Kruskals(Graph* graph){
 
 void Prims(Graph* graph){
   Graph g = *graph;
-  int * visited;
+  int V = g.vertices;
+  List* Q;
   PrimHelper t[5];
-  int arrSize = 5;
-  int * Q;
+  int lastNode = 0;		// Holds the integer value of the last node visited
   
-  // Put all of the vertices in a list
-  for(int i = 0; i <5; i++) {
-    Q = new int;
-    Q[i] = i;
-  }
+  // Set up Q
+  Q = (List*)malloc(graph->vertices * sizeof(List));  
+  Q = g.array;
   
-  for(int i =0; i<5; i++){
-    cout << " " << Q[i];
-  }
-  cout << endl;
-  
-  // Set all key's to infinity and all parents to NULL
-  for(int i = 0; i < 5; i++){
-    t[i].weight = INFINITY;
+  // Set all keys to infinity and all parents to NULL
+  for(int i = 0; i<5; i++){
+    t[i].key = INFINITY;
     t[i].parent = NULL;
   }
+  
+  // Pick starting node 0 and set it's key to 0
+  t[0].key = 0;
 
-  // Pick a root and set it's key to 0
- // t[0].key = 0;
+  // Update keys nearby
+  
 
-  while(arrSize > 0){
-    // Find the lowest weight
+  // Get Minimum
+  lastNode = GetMin(Q, t, lastNode);
+
+
+  cout << "Prims:" << endl << endl;
+cout << endl << lastNode;
+
+/*
+  Node* temp;
+  for(int i = 0; i < 5; i++){
+    temp = graph->array[i].head;
     
-    // Subtract that element from Q
-    arrSize--;
+    while(temp->next != NULL){
+      temp = temp->next;
+      cout << temp->src << " -(" <<  temp->weight << ")-> " <<  temp->dest << endl;
+    }
   }
-
+  cout << endl << "____________" << endl << endl;;
+  cout << graph->array[0].head->src << " -" <<  graph->array[0].head->weight << "-> " <<  graph->array[0].head->dest << endl;
+  cout << graph->array[1].head->src << " -" <<  graph->array[1].head->weight << "-> " <<  graph->array[1].head->dest << endl;
+  cout << graph->array[2].head->src << " -" <<  graph->array[2].head->weight << "-> " <<  graph->array[2].head->dest << endl;
+  cout << graph->array[3].head->src << " -" <<  graph->array[3].head->weight << "-> " <<  graph->array[3].head->dest << endl;
+  cout << graph->array[4].head->src << " -" <<  graph->array[4].head->weight << "-> " <<  graph->array[4].head->dest << endl;
+  */
+  
 }
 
 
@@ -337,8 +393,8 @@ void Union(Subtree subtrees[], int v1, int v2){
 
 // Used for the qsort function
 int Compare(const void * a, const void * b){
-  Edge * a1 = (Edge*)a;
-  Edge * b1 = (Edge*)b;
+  Node * a1 = (Node*)a;
+  Node * b1 = (Node*)b;
 
   return a1->weight > b1->weight;
 }
@@ -351,3 +407,38 @@ int Compare(const void * a, const void * b){
 // ****************************************************************
 
 
+
+int GetMin(List* Q, PrimHelper t[5], int value){
+  int min = INFINITY;
+  int minVal = INFINITY;
+  Node* temp = new Node;
+  
+  temp = Q[value].head;
+  
+  // Get Minimum
+  
+// ****************************************************
+// ***************** MAY NOT GET THE LAST ELEMENT 
+// ****************************************************
+  while(temp->next){
+    if(temp->weight < minVal) {
+      minVal = temp->weight;
+      
+      if(temp->src != value){
+        min = temp->src;
+      }
+      else {
+        min = temp->dest;
+      }
+    }
+  }
+  
+  return min;
+}
+
+
+
+void UpdateKeys(List* Q, PrimHelper t[5], int value){
+  
+
+}
