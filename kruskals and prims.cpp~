@@ -224,12 +224,12 @@ void Kruskals(Graph* graph){
 
 
   // Test the sorted graph
-/*  cout << endl << "Testing Graph: ";
+  cout << endl << "Testing Graph: ";
 
   for(int i = 0; i < 7; i++)
     cout << endl << g->edge[i].src << " " << g->edge[i].dest << " " <<  g->edge[i].weight;
   cout << endl << endl;
-*/
+
   
   // Allocate Memory
   Subtree *subtrees = (Subtree*)malloc( v * sizeof(Subtree) );
@@ -336,7 +336,7 @@ void Prims(Graph* graph){
 */
 
   // Debug: Output the Adjacency list
-/*  Node* temp;
+  Node* temp;
   for(int i = 0; i < V; i++){
     temp = g.array[i].head;
     cout << i << ": " ;
@@ -346,7 +346,7 @@ void Prims(Graph* graph){
     }
     cout << endl;
   }
-*/
+
 
 }
 
