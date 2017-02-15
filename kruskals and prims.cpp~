@@ -6,6 +6,11 @@
 using namespace std;
 
 
+struct AdjList{
+  int myNum;
+  AdjList *next;
+};
+
 struct Edge{
     int src;
     int dest;
@@ -16,8 +21,8 @@ struct Edge{
 
 class Graph{
   public:
-    int vertices;
-    int edges;
+    int vertices;	// Number of vertices in the graph
+    int edges;		// Number of edges in the graph
   
     Edge* edge;
 
@@ -140,135 +145,19 @@ int main(){
 }
 
 
-int find(Subtree subtrees[], int findMe) {
-  cout << endl << "Looking: " << subtrees[findMe].head << " " << findMe << endl;
-  if(subtrees[findMe].head != findMe)
-    subtrees[findMe].head = find(subtrees, subtrees[findMe].head);
-    
-    cout << endl << "\tFind: " << subtrees[findMe].head;
-  return subtrees[findMe].head;
-}
-
-void Union(Subtree subtrees[], int v1, int v2){
-  int vt1 = find(subtrees, v1);
-  int vt2 = find(subtrees, v2);
-
-  
-  // Find the tree with the lower amount of elements and combine it to the bigger one
-  
-  // If vt1 < vt2
-  // Add vt1 to vt2
-  if(subtrees[vt1].numElements < subtrees[vt2].numElements){
-    subtrees[vt1].head = vt2;
-  }
-  
-  // If vt1 > vt2
-  // Add vt2 to vt1
-  else if(subtrees[vt1].numElements > subtrees[vt2].numElements){
-    subtrees[vt2].head = vt1;
-  }
-  
-  // If vt1 = vt2
-  // Then set vt2's head to vt1
-  else {
-    subtrees[vt2].head = vt1;
-    subtrees[vt1].numElements++;
-  }
-  
-}
-
-
-
-int Compare(const void * a, const void * b){
-  Edge * a1 = (Edge*)a;
-  Edge * b1 = (Edge*)b;
-  
-  return a1->weight > b1->weight;
-}
-
-
-
 void Kruskals(Graph* graph){
-  Graph* g = graph;
-  int v = g->get_vertices();
-  Edge result[v];
-  int numEdges = 0;
-  int sortedEdges = 0;
+  int src;
+  int dest;
+  int weight;
+  
+  
 
-  cout << endl << g->edge[1].src << " " << g->edge[1].dest << " " <<  g->edge[1].weight;
-  
-  
-  // Sort all the edges in order by weight using quicksort
-  qsort(g->get_edge(), g->get_edges(), sizeof(g->get_single_edge(0)), Compare);
-
-  // Test the graph
-  for(int i = 0; i < 5; i++)
-    cout << endl << g->edge[i].src << " " << g->edge[i].dest << " " <<  g->edge[i].weight;
-  cout << endl << endl;
-  
-  // Allocate Memory
-  Subtree *subtrees = (Subtree*)malloc( v * sizeof(Subtree) );
-  
-  // Create v Subtrees
-  for(int i = 0; i < v; i++){
-    subtrees[i].head = i;
-    subtrees[i].numElements = 0;
-  }
-  
-// It's eating a line here
-//  for(numEdges = 0; numEdges < v; numEdges++){
-  while(numEdges < v-1){
-    Edge next = g->get_single_edge(sortedEdges++);
-    
-    int src = find(subtrees, next.src);
-        cout << endl << subtrees[1].head << " " << subtrees[1].numElements << endl;
-    int dest = find(subtrees, next.dest);
-    cout << "dd" << endl << endl;
-
-    cout << endl << src << " " << dest;
-
-    if(src != dest){
-      result[numEdges++] = next;
-      Union(subtrees, src, dest);
-    }
-  }
-  
-  
-  cout << endl << "Kruskals: " << endl;
-  for(int i = 0; i < numEdges; i++){
-    cout << endl << result[i].src << " -> " << result[i].dest << "   = " << result[i].weight;
-  }
 
 }
-
-
 
 void Prims(Graph* graph){
-  Graph g = *graph;
-  int * visited;
-  PrimHelper t[5];
-  int arrSize = 5;
-  int * Q;
+  AdjList visited;
+  AdjList 
   
-  // Put all of the vertices in a list
-  for(int i = 0; i <5; i++) {
-    Q[i] = i++;
-  }
   
-  // Set all key's to infinity and all parents to NULL
-  for(int i = 0; i < 5; i++){
-    t[i].key = INT_MAX;
-    t[i].parent = NULL;
-  }
-
-  // Pick a root and set it's key to 0
-  t[0].key = 0;
-
-  while(arrSize > 0){
-    // Find the lowest weight
-    
-    // Subtract that element from Q
-  
-  }
-
 }
